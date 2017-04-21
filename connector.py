@@ -224,7 +224,7 @@ class Cursor(object):
             return None
         else:
             self._rownumber += 1
-            return self._data.pop()
+            return self._data.pop(0)
 
     def fetchmany(self, size=None):
         """Fetch the next set of rows of a query result, returning a sequence of sequences (e.g. a

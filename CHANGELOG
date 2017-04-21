@@ -1,3 +1,6 @@
+0.1.1
+- Fix query result order reversed issue (@scheng-hds)
+- fix issue occurred when inheriting parent attributes (@lu828)
 0.1.0
 - Basic ClickHouse syntax support, no DML/DDL
 - Support for tagged queries / query cancellation

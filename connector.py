@@ -108,12 +108,13 @@ class Connection(Database):
     """
         These objects are small stateless factories for cursors, which do all the real work.
     """
-    def __init__(self, db_name, db_url='http://localhost:8123/', username=None, password=None):
-        super(Connection, self).__init__(db_name, db_url, username, password)
+    def __init__(self, db_name, db_url='http://localhost:8123/', username=None, password=None, readonly=False):
+        super(Connection, self).__init__(db_name, db_url, username, password, readonly)
         self.db_name = db_name
         self.db_url = db_url
         self.username = username
         self.password = password
+        self.readonly = readonly
 
     def close(self):
         pass
@@ -188,9 +189,10 @@ class Cursor(object):
 
     def execute(self, operation, parameters=None):
         """Prepare and execute a database operation (query or command). """
-        if parameters is None:
+        if parameters is None or not parameters:
             sql = operation
         else:
+            print('using params. operation: {} \n params: {}'.format(operation, parameters))
             sql = operation % _escaper.escape_args(parameters)
 
         self._reset_state()

@@ -48,10 +48,7 @@ class ParamEscaper(object):
         # string formatting here.
         if isinstance(item, bytes):
             item = item.decode('utf-8')
-        # This is good enough when backslashes are literal, newlines are just followed, and the way
-        # to escape a single quote is to put two single quotes.
-        # (i.e. only special character is single quote)
-        return "'{}'".format(item.replace("'", "''"))
+        return "'{}'".format(item.replace("'", "\\'").replace("$", "$$"))
 
     def escape_item(self, item):
         if item is None:
@@ -186,21 +183,22 @@ class Cursor(object):
     def close(self):
         pass
 
-    def execute(self, operation, parameters=None):
+    def execute(self, operation, parameters=None, is_response=True):
         """Prepare and execute a database operation (query or command). """
         if parameters is None:
             sql = operation
         else:
             sql = operation % _escaper.escape_args(parameters)
-
         self._reset_state()
 
         self._state = self._STATE_RUNNING
         self._uuid = uuid.uuid1()
 
-        response = self._db.select(sql, settings={'query_id':self._uuid})
-
-        self._process_response(response)
+        if is_response:
+            response = self._db.select(sql, settings={'query_id': self._uuid})
+            self._process_response(response)
+        else:
+            self._db.raw(sql)
 
     def executemany(self, operation, seq_of_parameters):
         """Prepare a database operation (query or command) and then execute it against all parameter
@@ -211,7 +209,7 @@ class Cursor(object):
         Return values are not defined.
         """
         for parameters in seq_of_parameters[:-1]:
-            self.execute(operation, parameters)
+            self.execute(operation, parameters, is_response=False)
         if seq_of_parameters:
             self.execute(operation, seq_of_parameters[-1])
 
@@ -322,3 +320,4 @@ class Cursor(object):
         self._data = data
         self._columns = cols
         self._state = self._STATE_FINISHED
+

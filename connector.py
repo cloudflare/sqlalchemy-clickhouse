@@ -6,7 +6,7 @@
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
-import sys
+import re
 import uuid
 import requests
 from infi.clickhouse_orm.models import ModelBase
@@ -208,10 +208,24 @@ class Cursor(object):
 
         Return values are not defined.
         """
+        values_list = []
+        RE_INSERT_VALUES = re.compile(
+            r"\s*((?:INSERT|REPLACE)\s.+\sVALUES?\s*)" +
+            r"(\(\s*(?:%s|%\(.+\)s)\s*(?:,\s*(?:%s|%\(.+\)s)\s*)*\))" +
+            r"(\s*(?:ON DUPLICATE.*)?);?\s*\Z",
+            re.IGNORECASE | re.DOTALL)
+
+        m = RE_INSERT_VALUES.match(operation)
+        if m:
+            q_prefix = m.group(1) % ()
+            q_values = m.group(2).rstrip()
+
+            for parameters in seq_of_parameters[:-1]:
+                values_list.append(q_values % _escaper.escape_args(parameters))
+            query = '{} {};'.format(q_prefix, ','.join(values_list))
+            return self._db.raw(query)
         for parameters in seq_of_parameters[:-1]:
             self.execute(operation, parameters, is_response=False)
-        if seq_of_parameters:
-            self.execute(operation, seq_of_parameters[-1])
 
     def fetchone(self):
         """Fetch the next row of a query result set, returning a single sequence, or ``None`` when
@@ -320,4 +334,3 @@ class Cursor(object):
         self._data = data
         self._columns = cols
         self._state = self._STATE_FINISHED
-

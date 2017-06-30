@@ -48,7 +48,7 @@ class ParamEscaper(object):
         # string formatting here.
         if isinstance(item, bytes):
             item = item.decode('utf-8')
-        return "'{}'".format(item.replace("'", "\\'").replace("$", "$$"))
+        return "'{}'".format(item.replace("\\", "\\\\").replace("'", "\\'").replace("$", "$$"))
 
     def escape_item(self, item):
         if item is None:
@@ -189,6 +189,7 @@ class Cursor(object):
             sql = operation
         else:
             sql = operation % _escaper.escape_args(parameters)
+
         self._reset_state()
 
         self._state = self._STATE_RUNNING
@@ -334,3 +335,4 @@ class Cursor(object):
         self._data = data
         self._columns = cols
         self._state = self._STATE_FINISHED
+

@@ -227,7 +227,7 @@ class ClickHouseDialect(default.DefaultDialect):
             try:
                 coltype = ischema_names[col_type]
             except KeyError:
-                coltype = types.NullType
+                coltype = sqltypes.NullType
             result.append({
                 'name': col_name,
                 'type': coltype,

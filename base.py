@@ -219,11 +219,20 @@ class ClickHouseDialect(default.DefaultDialect):
         rows = self._get_table_columns(connection, table_name, schema)
         result = []
         for r in rows:
-            # Take out the more detailed type information
-            # e.g. 'map<int,int>' -> 'map'
-            #      'decimal(10,1)' -> decimal
             col_name = r.name
-            col_type = re.search(r'^\w+', r.type).group(0)
+            col_type = ""
+            if r.type.startswith("AggregateFunction"):
+                # Extract type information from a column
+                # using AggregateFunction
+                # the type from clickhouse will be 
+                # AggregateFunction(sum, Int64) for an Int64 type
+                # remove first 24 chars and remove the last one to get Int64
+                col_type = r.type[23:-1]
+            else:    
+                # Take out the more detailed type information
+                # e.g. 'map<int,int>' -> 'map'
+                #      'decimal(10,1)' -> decimal                
+                col_type = re.search(r'^\w+', r.type).group(0)
             try:
                 coltype = ischema_names[col_type]
             except KeyError:

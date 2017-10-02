@@ -66,6 +66,7 @@ _escaper = ParamEscaper()
 @classmethod
 def create_ad_hoc_field(cls, db_type):
     import infi.clickhouse_orm.fields as orm_fields
+
     # Enums
     if db_type.startswith('Enum'):
         db_type = 'String' # enum.Eum is not comparable
@@ -76,6 +77,11 @@ def create_ad_hoc_field(cls, db_type):
     # FixedString
     if db_type.startswith('FixedString'):
         db_type = 'String'
+
+    if db_type.startswith('Nullable'):
+        inner_field = cls.create_ad_hoc_field(db_type[9 : -1])
+        return orm_fields.NullableField(inner_field)
+
     # Simple fields
     name = db_type + 'Field'
     if not hasattr(orm_fields, name):

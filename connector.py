@@ -78,6 +78,9 @@ def create_ad_hoc_field(cls, db_type):
     if db_type.startswith('FixedString'):
         db_type = 'String'
 
+    if db_type.startswith('DateTime'):
+        db_type = 'DateTime'
+
     if db_type.startswith('Nullable'):
         inner_field = cls.create_ad_hoc_field(db_type[9 : -1])
         return orm_fields.NullableField(inner_field)

@@ -122,15 +122,15 @@ class ClickHouseCompiler(PGCompiler):
 
     def limit_clause(self, select, **kw):
         text = ''
-        if select._limit_clause is not None:
-            text += '\n LIMIT ' + self.process(select._limit_clause, **kw)
         if select._offset_clause is not None:
-            text = '\n LIMIT '
-            if select._limit_clause is None:
-                text += self.process(sql.literal(-1))
+            text = '\n LIMIT ' + self.process(select._offset_clause, **kw) + ', '
+
+            if select._limit_clause is not None:
+                text += self.process(select._limit_clause, **kw)
             else:
                 text += '0'
-            text += ',' + self.process(select._offset_clause, **kw)
+        elif select._limit_clause is not None:
+            text += '\n LIMIT ' + self.process(select._limit_clause, **kw)
         return text
 
     def for_update_clause(self, select, **kw):
@@ -224,14 +224,14 @@ class ClickHouseDialect(default.DefaultDialect):
             if r.type.startswith("AggregateFunction"):
                 # Extract type information from a column
                 # using AggregateFunction
-                # the type from clickhouse will be 
+                # the type from clickhouse will be
                 # AggregateFunction(sum, Int64) for an Int64 type
                 # remove first 24 chars and remove the last one to get Int64
                 col_type = r.type[23:-1]
-            else:    
+            else:
                 # Take out the more detailed type information
                 # e.g. 'map<int,int>' -> 'map'
-                #      'decimal(10,1)' -> decimal                
+                #      'decimal(10,1)' -> decimal
                 col_type = re.search(r'^\w+', r.type).group(0)
             try:
                 coltype = ischema_names[col_type]

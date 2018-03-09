@@ -1,3 +1,6 @@
+0.1.4
+- Fix the db_type issue (@inpefess)
+- removed unnecessary debug statement (@RichRadics)
 0.1.3
 - fix(connector): nullable types (Fadi Hadzh)
 - fix datetime db type (Ivan Borovkov)

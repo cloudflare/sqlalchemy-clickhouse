@@ -192,7 +192,6 @@ class Cursor(object):
         if parameters is None or not parameters:
             sql = operation
         else:
-            print('using params. operation: {} \n params: {}'.format(operation, parameters))
             sql = operation % _escaper.escape_args(parameters)
 
         self._reset_state()

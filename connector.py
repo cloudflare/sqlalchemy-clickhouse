@@ -11,6 +11,7 @@ import uuid
 import requests
 from infi.clickhouse_orm.models import ModelBase
 from infi.clickhouse_orm.database import Database
+from collections import OrderedDict
 
 # PEP 249 module globals
 apilevel = '2.0'
@@ -336,8 +337,12 @@ class Cursor(object):
         data = []
         for r in response:
             if not cols:
-                cols = [(f[0], f[1].db_type) for f in r._fields]
-            data.append([getattr(r, f[0]) for f in r._fields])
+                if isinstance(r._fields, OrderedDict):
+                    fields = list(OrderedDict(r._fields).items())
+                else:
+                    fields = r._fields
+                cols = [(f[0], f[1].db_type) for f in fields]
+            data.append([getattr(r, f[0]) for f in fields])
         self._data = data
         self._columns = cols
         self._state = self._STATE_FINISHED

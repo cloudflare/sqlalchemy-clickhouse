@@ -54,7 +54,7 @@ class ClickHouseIdentifierPreparer(PGIdentifierPreparer):
         return self._escape_identifier(value)
     def quote(self, ident, force=None):
         if self._requires_quotes(ident):
-            return '"{}"'.format(ident).lower()
+            return '"{}"'.format(ident)
         return ident
 
 class ClickHouseCompiler(PGCompiler):

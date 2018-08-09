@@ -1,3 +1,5 @@
+0.1.5
+- quoting fix (Ramil Aglyautdinov)
 0.1.4
 - Fix the db_type issue (@inpefess)
 - removed unnecessary debug statement (@RichRadics)

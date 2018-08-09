@@ -4,7 +4,7 @@ from os import path, getenv
 from setuptools import setup
 from codecs import open
 
-VERSION = [0, 1, 4]
+VERSION = [0, 1, 5]
 readme = open('README.rst').read()
 
 setup(
@@ -17,7 +17,7 @@ setup(
     license = 'Apache License, Version 2.0',
     url = 'https://github.com/cloudflare/sqlalchemy-clickhouse',
     keywords = "db database cloud analytics clickhouse",
-    download_url = 'https://github.com/cloudflare/sqlalchemy-clickhouse/releases/tag/v0.1.4',
+    download_url = 'https://github.com/cloudflare/sqlalchemy-clickhouse/releases/tag/v0.1.5',
     install_requires = [
         'sqlalchemy>=1.0.0',
         'infi.clickhouse_orm>=1.0.0'

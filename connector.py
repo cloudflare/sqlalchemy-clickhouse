@@ -340,8 +340,8 @@ class Cursor(object):
         data = []
         for r in response:
             if not cols:
-                cols = [(f[0], f[1].db_type) for f in r._fields]
-            data.append([getattr(r, f[0]) for f in r._fields])
+                cols = [(f, r._fields[f].db_type) for f in r._fields]
+            data.append([getattr(r, f) for f in r._fields])
         self._data = data
         self._columns = cols
         self._state = self._STATE_FINISHED

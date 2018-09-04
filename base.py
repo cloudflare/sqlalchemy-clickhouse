@@ -59,7 +59,7 @@ class ClickHouseIdentifierPreparer(PGIdentifierPreparer):
 
 class ClickHouseCompiler(PGCompiler):
     def visit_count_func(self, fn, **kw):
-        return 'count()'
+        return 'count{0}'.format(self.process(fn.clause_expr, **kw))
 
     def visit_random_func(self, fn, **kw):
         return 'rand()'

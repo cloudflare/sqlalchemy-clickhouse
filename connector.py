@@ -78,6 +78,9 @@ def create_ad_hoc_field(cls, db_type):
     if db_type.startswith('FixedString'):
         db_type = 'String'
 
+    if db_type == 'LowCardinality(String)':
+        db_type = 'String'
+
     if db_type.startswith('DateTime'):
         db_type = 'DateTime'
 
@@ -345,4 +348,3 @@ class Cursor(object):
         self._data = data
         self._columns = cols
         self._state = self._STATE_FINISHED
-

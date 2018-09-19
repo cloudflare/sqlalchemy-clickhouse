@@ -3,6 +3,7 @@
 # Note: parts of the file come from https://github.com/snowflakedb/snowflake-sqlalchemy
 #       licensed under the same Apache 2.0 License
 
+from collections import Counter
 import re
 
 import sqlalchemy.types as sqltypes
@@ -10,11 +11,16 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import util as sa_util
 from sqlalchemy.engine import default, reflection
 from sqlalchemy.sql import compiler, expression
-from sqlalchemy.sql.elements import quoted_name
+from sqlalchemy.sql.elements import ClauseList, quoted_name
 from sqlalchemy.dialects.postgresql.base import PGCompiler, PGIdentifierPreparer
 from sqlalchemy.types import (
     CHAR, DATE, DATETIME, INTEGER, SMALLINT, BIGINT, DECIMAL, TIME,
     TIMESTAMP, VARCHAR, BINARY, BOOLEAN, FLOAT, REAL)
+
+try:
+    import sqlalchemy_clickhouse.functions as functions
+except:
+    import functions
 
 # Export connector version
 VERSION = (0, 1, 0, None)
@@ -46,6 +52,7 @@ ischema_names = {
     'Enum8': VARCHAR,
     'Enum16': VARCHAR,
     'Array': ARRAY,
+    'LowCardinality(String)': VARCHAR,
 }
 
 class ClickHouseIdentifierPreparer(PGIdentifierPreparer):
@@ -121,6 +128,29 @@ class ClickHouseCompiler(PGCompiler):
         if isinstance(type_, sqltypes.Date):
             value = 'toDate(%s)' % value
         return value
+
+    def group_by_clause(self, select, **kw):
+        # Move summaries to end of _group_by_clause
+        summ_names = ('cube', 'rollup', 'with_cube', 'with_rollup', 'with_totals')
+        compiler.FUNCTIONS.update({
+            functions.with_cube: 'WITH CUBE',
+            functions.with_rollup: 'WITH ROLLUP',
+            functions.with_totals: 'WITH TOTALS'
+        })
+        summaries = [c for c in select._group_by_clause if c.name in summ_names]
+        # Use Counter instead of set to preserve order of group by cols
+        select._group_by_clause = ClauseList(
+          *list(Counter(select._group_by_clause) - Counter(summaries))
+        )
+        text = ' GROUP BY'
+        group_by = super(ClickHouseCompiler, self).group_by_clause(select, **kw)
+        if group_by:
+            text = group_by
+        for name in summ_names:
+            for s in summaries:
+                if s.name == name:
+                    text += ' ' + self.process(s)
+        return text
 
     def limit_clause(self, select, **kw):
         text = ''
@@ -226,14 +256,14 @@ class ClickHouseDialect(default.DefaultDialect):
             if r.type.startswith("AggregateFunction"):
                 # Extract type information from a column
                 # using AggregateFunction
-                # the type from clickhouse will be 
+                # the type from clickhouse will be
                 # AggregateFunction(sum, Int64) for an Int64 type
                 # remove first 24 chars and remove the last one to get Int64
                 col_type = r.type[23:-1]
-            else:    
+            else:
                 # Take out the more detailed type information
                 # e.g. 'map<int,int>' -> 'map'
-                #      'decimal(10,1)' -> decimal                
+                #      'decimal(10,1)' -> decimal
                 col_type = re.search(r'^\w+', r.type).group(0)
             try:
                 coltype = ischema_names[col_type]

@@ -1,4 +1,6 @@
 from sqlalchemy import column, func, Integer, select, String, table
+from sqlalchemy.exc import CompileError
+
 from test.testcase import BaseTestCase
 
 tbl = table(
@@ -63,3 +65,23 @@ class GroupBySummariesTestCase(BaseTestCase):
           'SELECT id, name, city, SUM(wins) AS wins FROM nba GROUP BY id, name,'
           ' city WITH CUBE WITH TOTALS'
       )
+
+class LimitClauseTestCase(BaseTestCase):
+    def test_limit(self):
+        stmt = select([tbl.c.id, tbl.c.name]).limit(10)
+        self.assertEqual(
+            self.compile(stmt, literal_binds=True),
+            'SELECT id, name FROM nba  LIMIT 10'
+        )
+
+    def test_limit_with_offset(self):
+        stmt = select([tbl.c.id, tbl.c.name]).limit(10).offset(5)
+        self.assertEqual(
+            self.compile(stmt, literal_binds=True),
+            'SELECT id, name FROM nba  LIMIT 5, 10'
+        )
+
+    def test_offset_without_limit(self):
+        stmt = select([tbl.c.id, tbl.c.name]).offset(5)
+        with self.assertRaises(CompileError) as ctx:
+            self.compile(stmt, literal_binds=True)

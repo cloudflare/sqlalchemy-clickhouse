@@ -7,7 +7,7 @@ from collections import Counter
 import re
 
 import sqlalchemy.types as sqltypes
-from sqlalchemy import exc as sa_exc
+from sqlalchemy import exc
 from sqlalchemy import util as sa_util
 from sqlalchemy.engine import default, reflection
 from sqlalchemy.sql import compiler, expression
@@ -155,14 +155,13 @@ class ClickHouseCompiler(PGCompiler):
     def limit_clause(self, select, **kw):
         text = ''
         if select._limit_clause is not None:
-            text += '\n LIMIT ' + self.process(select._limit_clause, **kw)
-        if select._offset_clause is not None:
-            text = '\n LIMIT '
-            if select._limit_clause is None:
-                text += self.process(sql.literal(-1))
-            else:
-                text += '0'
-            text += ',' + self.process(select._offset_clause, **kw)
+            text += ' \n LIMIT '
+            if select._offset_clause is not None:
+                text += self.process(select._offset_clause, **kw) + ', '
+            text += self.process(select._limit_clause, **kw)
+        else:
+            if select._offset_clause is not None:
+                raise exc.CompileError('OFFSET without LIMIT is not supported')
         return text
 
     def for_update_clause(self, select, **kw):

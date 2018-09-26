@@ -11,6 +11,7 @@ import uuid
 import requests
 from infi.clickhouse_orm.models import ModelBase
 from infi.clickhouse_orm.database import Database
+from infi.clickhouse_orm.utils import parse_tsv
 
 # PEP 249 module globals
 apilevel = '2.0'
@@ -94,6 +95,31 @@ def create_ad_hoc_field(cls, db_type):
         raise NotImplementedError('No field class for %s' % db_type)
     return getattr(orm_fields, name)()
 ModelBase.create_ad_hoc_field = create_ad_hoc_field
+
+def select(self, query, model_class=None, settings=None):
+    '''
+    Performs a query and returns a generator of model instances with first item
+    as model instance without results to retrieve column types for cursor
+    description.  Subsequent items contain results if any.
+
+    - `query`: the SQL query to execute.
+    - `model_class`: the model class matching the query's table,
+      or `None` for getting back instances of an ad-hoc model.
+    - `settings`: query settings to send as HTTP GET parameters
+    '''
+    query += ' FORMAT TabSeparatedWithNamesAndTypes'
+    query = self._substitute(query, model_class)
+    r = self._send(query, settings, True)
+    lines = r.iter_lines()
+    field_names = parse_tsv(next(lines))
+    field_types = parse_tsv(next(lines))
+    model_class = model_class or ModelBase.create_ad_hoc_model(zip(field_names, field_types))
+    yield model_class
+    for line in lines:
+        # skip blank line left by WITH TOTALS modifier
+        if line:
+            yield model_class.from_tsv(line, field_names, self.server_timezone, self)
+Database.select = select
 
 from six import PY3, string_types
 def _send(self, data, settings=None, stream=False):
@@ -339,12 +365,10 @@ class Cursor(object):
     def _process_response(self, response):
         """ Update the internal state with the data from the response """
         assert self._state == self._STATE_RUNNING, "Should be running if processing response"
-        cols = None
         data = []
+        model = next(response)
+        self._columns = [(f, model._fields[f].db_type) for f in model._fields]
         for r in response:
-            if not cols:
-                cols = [(f, r._fields[f].db_type) for f in r._fields]
             data.append([getattr(r, f) for f in r._fields])
         self._data = data
-        self._columns = cols
         self._state = self._STATE_FINISHED

@@ -137,7 +137,7 @@ class ClickHouseCompiler(PGCompiler):
             functions.with_rollup: 'WITH ROLLUP',
             functions.with_totals: 'WITH TOTALS'
         })
-        summaries = [c for c in select._group_by_clause if c.name in summ_names]
+        summaries = [c for c in select._group_by_clause if getattr(c, 'name', None) and c.name in summ_names]
         # Use Counter instead of set to preserve order of group by cols
         select._group_by_clause = ClauseList(
           *list(Counter(select._group_by_clause) - Counter(summaries))

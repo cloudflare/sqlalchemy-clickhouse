@@ -20,6 +20,14 @@ class GroupBySummariesTestCase(BaseTestCase):
             'SELECT id, name, city FROM nba GROUP BY id, name, city'
         )
 
+    def test_group_by_without_summary_with_labels(self):
+        stmt = select([tbl.c.name.label('labeled_name'), tbl.c.city.label('labeled_city')]).group_by(
+                  'labeled_name', 'labeled_city')
+        self.assertEqual(
+            self.compile(stmt),
+            'SELECT name AS labeled_name, city AS labeled_city FROM nba GROUP BY labeled_name, labeled_city'
+        )
+
     def test_group_by_with_rollup(self):
         stmt = select([tbl.c.id]).group_by(tbl.c.id, func.with_rollup())
         self.assertEqual(

@@ -9,7 +9,7 @@ readme = open('README.rst').read()
 
 setup(
     name='sqlalchemy-clickhouse',
-    version='.'.join('%d' % v for v in VERSION[0:3]) + "-0",
+    version='.'.join('%d' % v for v in VERSION[0:3]),
     description='ClickHouse SQLAlchemy Dialect',
     long_description = readme,
     author = 'Cloudflare, Inc.',

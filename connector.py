@@ -261,29 +261,35 @@ class Cursor(object):
         fetch as many rows as indicated by the size parameter. If this is not possible due to the
         specified number of rows not being available, fewer rows may be returned.
         """
+        if self._state == self._STATE_NONE:
+            raise Exception("No query yet")
+
         if size is None:
             size = 1
-        result = []
-        for _ in range(size):
-            one = self.fetchone()
-            if one is None:
-                break
+
+        if not self._data:
+            return []
+        else:
+            if len(self._data) > size:
+                result, self._data = self._data[:size], self._data[size:]
             else:
-                result.append(one)
-        return result
+                result, self._data = self._data, []
+            self._rownumber += len(result)
+            return result
 
     def fetchall(self):
         """Fetch all (remaining) rows of a query result, returning them as a sequence of sequences
         (e.g. a list of tuples).
         """
-        result = []
-        while True:
-            one = self.fetchone()
-            if one is None:
-                break
-            else:
-                result.append(one)
-        return result
+        if self._state == self._STATE_NONE:
+            raise Exception("No query yet")
+
+        if not self._data:
+            return []
+        else:
+            result, self._data = self._data, []
+            self._rownumber += len(result)
+            return result
 
     @property
     def arraysize(self):

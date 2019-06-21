@@ -116,6 +116,12 @@ Database._send = _send
 #
 
 def connect(*args, **kwargs):
+    # crude hack to get authentication to work
+    if 'username' in kwargs:
+        kwargs['db_url'] = kwargs['db_url'].replace('//','//{username}:{password}@'.format(
+            username=kwargs['username'] if kwargs['username'] else 'default',
+            password=kwargs['password'] if kwargs['username'] and 'password' in kwargs else ''
+        ))
     return Connection(*args, **kwargs)
 
 class Connection(Database):

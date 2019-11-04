@@ -19,7 +19,7 @@ The DSN format is similar to that of regular Postgres::
     >>> sa.create_engine('clickhouse://username:password@hostname:port/database')
     Engine('clickhouse://username:password@hostname:port/database')
     
-For SSL ass ssl parameter to URL::
+For SSL add ssl parameter to URL::
 
     >>> import sqlalchemy as sa
     >>> sa.create_engine('clickhouse://username:password@hostname:port/database?ssl=True')

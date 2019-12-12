@@ -13,7 +13,7 @@ from infi.clickhouse_orm.models import ModelBase
 from infi.clickhouse_orm.database import Database
 
 # fix local timezone
-from pytz.reference import LocalTimezone
+from tzlocal import get_localzone
 import os
 # fixed local timezone
 
@@ -366,7 +366,7 @@ class Cursor(object):
 
                 clickhouseUseLocalTimezone = int(os.getenv('CLICKHOUSE_USE_LOCAL_TIMEZONE', '0'))
                 if clickhouseUseLocalTimezone and (r._fields[fi].db_type == 'DateTime' or r._fields[fi].db_type == 'Date'):
-                    val = val.astimezone(LocalTimezone())
+                    val = val.astimezone(get_localzone())
 
                 vals.append(val)
             data.append(vals)

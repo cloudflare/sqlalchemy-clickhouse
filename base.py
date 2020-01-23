@@ -127,12 +127,9 @@ class ClickHouseCompiler(PGCompiler):
         if select._limit_clause is not None:
             text += '\n LIMIT ' + self.process(select._limit_clause, **kw)
         if select._offset_clause is not None:
-            text = '\n LIMIT '
             if select._limit_clause is None:
-                text += self.process(sql.literal(-1))
-            else:
-                text += '0'
-            text += ',' + self.process(select._offset_clause, **kw)
+                text += '\n LIMIT 0'
+            text += ' OFFSET '+ self.process(select._offset_clause, **kw)
         return text
 
     def for_update_clause(self, select, **kw):

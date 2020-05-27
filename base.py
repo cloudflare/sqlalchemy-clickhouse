@@ -194,6 +194,9 @@ class ClickHouseDialect(default.DefaultDialect):
         kwargs.update(url.query)
         return ([url.database or 'default'], kwargs)
 
+    def _get_default_schema_name(self, connection):
+        return connection.scalar("select currentDatabase()")
+
     def get_schema_names(self, connection, **kw):
         return [row.name for row in connection.execute('SHOW DATABASES')]
 

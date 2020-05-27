@@ -11,6 +11,7 @@ import uuid
 import requests
 from infi.clickhouse_orm.models import ModelBase
 from infi.clickhouse_orm.database import Database
+from datetime import datetime
 
 # PEP 249 module globals
 apilevel = '2.0'
@@ -57,6 +58,8 @@ class ParamEscaper(object):
             return self.escape_number(item)
         elif isinstance(item, basestring):
             return self.escape_string(item)
+        elif isinstance(item, datetime):
+            return self.escape_string(item.strftime("%Y-%m-%d %H:%M:%S"))
         else:
             raise Exception("Unsupported object {}".format(item))
 

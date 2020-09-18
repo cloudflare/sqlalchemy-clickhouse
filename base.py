@@ -46,6 +46,7 @@ ischema_names = {
     'Enum8': VARCHAR,
     'Enum16': VARCHAR,
     'Array': ARRAY,
+    'Decimal': DECIMAL,
 }
 
 class ClickHouseIdentifierPreparer(PGIdentifierPreparer):
@@ -233,6 +234,8 @@ class ClickHouseDialect(default.DefaultDialect):
                 # AggregateFunction(sum, Int64) for an Int64 type
                 # remove first 24 chars and remove the last one to get Int64
                 col_type = r.type[23:-1]
+            elif r.type.startswith("Nullable"):
+                col_type = re.search(r'^\w+', r.type[9:-1]).group(0)
             else:    
                 # Take out the more detailed type information
                 # e.g. 'map<int,int>' -> 'map'

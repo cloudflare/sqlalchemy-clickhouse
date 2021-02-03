@@ -149,7 +149,6 @@ class Connection(Database):
         self.username = username
         self.password = password
         self.readonly = readonly
-        self.verify_ssl_cert = verify_ssl_cert
 
     def close(self):
         pass

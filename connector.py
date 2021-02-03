@@ -126,7 +126,7 @@ class Connection(Database):
         These objects are small stateless factories for cursors, which do all the real work.
     """
     def __init__(self, db_name, db_url='http://localhost:8123/', username=None,
-                 password=None, readonly=False, ssl="False", verify_ssl_cert="True"):
+                 password=None, readonly=False, ssl="False", verify="True"):
         if ssl.upper() == "TRUE":
             db_url = db_url.replace("http", "https")
         elif ssl.upper() == "FALSE":
@@ -134,16 +134,16 @@ class Connection(Database):
         else:
             raise ValueError("Not Supported value of ssl parameter, only True/False values are accepted")
 
-        if verify_ssl_cert.upper() == "TRUE":
-            verify_ssl_cert = True
-        elif verify_ssl_cert.upper() == "FALSE":
-            verify_ssl_cert = False
+        if verify.upper() == "TRUE":
+            verify = True
+        elif verify.upper() == "FALSE":
+            verify = False
         else:
             raise ValueError(
                 "Not Supported value of verify_ssl_cert parameter, only True/False values are accepted")
 
         super(Connection, self).__init__(db_name, db_url, username, password, readonly,
-                                         verify_ssl_cert=verify_ssl_cert)
+                                         verify_ssl_cert=verify)
         self.db_name = db_name
         self.db_url = db_url
         self.username = username

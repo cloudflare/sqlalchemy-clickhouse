@@ -140,7 +140,8 @@ class Connection(Database):
             verify = False
         else:
             raise ValueError(
-                "Not Supported value of verify_ssl_cert parameter, only True/False values are accepted")
+                "Not Supported value of verify_ssl_cert parameter, only True/False values are accepted"
+            )
 
         super(Connection, self).__init__(db_name, db_url, username, password, readonly,
                                          verify_ssl_cert=verify)

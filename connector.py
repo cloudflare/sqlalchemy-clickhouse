@@ -121,30 +121,33 @@ Database._send = _send
 def connect(*args, **kwargs):
     return Connection(*args, **kwargs)
 
+
+def str_parameter_to_bool(parameter, value):
+    value = value.upper()
+    if value == "TRUE":
+        return True
+    if value == "FALSE":
+        return False
+
+    raise ValueError(
+        "Not Supported value of %s parameter, "
+        "only True/False values are accepted" % parameter
+    )
+
+
 class Connection(Database):
     """
         These objects are small stateless factories for cursors, which do all the real work.
     """
     def __init__(self, db_name, db_url='http://localhost:8123/', username=None,
                  password=None, readonly=False, ssl="False", verify="True"):
-        if ssl.upper() == "TRUE":
+        if str_parameter_to_bool("ssl", ssl):
             db_url = db_url.replace("http", "https")
-        elif ssl.upper() == "FALSE":
-            pass
-        else:
-            raise ValueError("Not Supported value of ssl parameter, only True/False values are accepted")
 
-        if verify.upper() == "TRUE":
-            verify = True
-        elif verify.upper() == "FALSE":
-            verify = False
-        else:
-            raise ValueError(
-                "Not Supported value of verify_ssl_cert parameter, only True/False values are accepted"
-            )
+        verify = str_parameter_to_bool("verify", verify)
 
-        super(Connection, self).__init__(db_name, db_url, username, password, readonly,
-                                         verify_ssl_cert=verify)
+        super(Connection, self).__init__(db_name, db_url, username, password,
+                                         readonly, verify_ssl_cert=verify)
         self.db_name = db_name
         self.db_url = db_url
         self.username = username

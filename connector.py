@@ -90,12 +90,17 @@ def create_ad_hoc_field(cls, db_type):
     if db_type.startswith('Nullable'):
         inner_field = cls.create_ad_hoc_field(db_type[9 : -1])
         return orm_fields.NullableField(inner_field)
-   
-    # db_type for Deimal comes like 'Decimal(P, S) string where P is precision and S is scale'
+
+    # db_type for Decimal comes like 'Decimal(P, S) string where P is precision and S is scale'
     if db_type.startswith('Decimal'):
         nums = [int(n) for n in db_type[8:-1].split(',')]
         return orm_fields.DecimalField(nums[0], nums[1])
-    
+
+    # aggregation Functions
+    if db_type.startswith('SimpleAggregateFunction'):
+        function = db_type.split(',')[1].strip()[:-1]
+        return cls.create_ad_hoc_field(function)
+
     # Simple fields
     name = db_type + 'Field'
     if not hasattr(orm_fields, name):

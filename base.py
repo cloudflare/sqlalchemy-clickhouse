@@ -47,6 +47,7 @@ ischema_names = {
     'Enum16': VARCHAR,
     'Array': ARRAY,
     'Decimal': DECIMAL,
+    "DateTime64": TIMESTAMP,
 }
 
 class ClickHouseIdentifierPreparer(PGIdentifierPreparer):

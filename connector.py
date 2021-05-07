@@ -90,12 +90,12 @@ def create_ad_hoc_field(cls, db_type):
     if db_type.startswith('Nullable'):
         inner_field = cls.create_ad_hoc_field(db_type[9 : -1])
         return orm_fields.NullableField(inner_field)
-   
+
     # db_type for Deimal comes like 'Decimal(P, S) string where P is precision and S is scale'
     if db_type.startswith('Decimal'):
         nums = [int(n) for n in db_type[8:-1].split(',')]
         return orm_fields.DecimalField(nums[0], nums[1])
-    
+
     # Simple fields
     name = db_type + 'Field'
     if not hasattr(orm_fields, name):
@@ -121,18 +121,33 @@ Database._send = _send
 def connect(*args, **kwargs):
     return Connection(*args, **kwargs)
 
+
+def str_parameter_to_bool(parameter, value):
+    value = value.upper()
+    if value == "TRUE":
+        return True
+    if value == "FALSE":
+        return False
+
+    raise ValueError(
+        "Not Supported value of %s parameter, "
+        "only True/False values are accepted" % parameter
+    )
+
+
 class Connection(Database):
     """
         These objects are small stateless factories for cursors, which do all the real work.
     """
-    def __init__(self, db_name, db_url='http://localhost:8123/', username=None, password=None, readonly=False, ssl="False"):
-        if ssl.upper() == "TRUE":
+    def __init__(self, db_name, db_url='http://localhost:8123/', username=None,
+                 password=None, readonly=False, ssl="False", verify="True"):
+        if str_parameter_to_bool("ssl", ssl):
             db_url = db_url.replace("http", "https")
-        elif ssl.upper() == "FALSE":
-            pass
-        else:
-            raise ValueError("Not Supported value of ssl parameter, only True/False values are accepted")
-        super(Connection, self).__init__(db_name, db_url, username, password, readonly)
+
+        verify = str_parameter_to_bool("verify", verify)
+
+        super(Connection, self).__init__(db_name, db_url, username, password,
+                                         readonly, verify_ssl_cert=verify)
         self.db_name = db_name
         self.db_url = db_url
         self.username = username

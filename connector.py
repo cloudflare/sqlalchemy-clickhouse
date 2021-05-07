@@ -140,14 +140,16 @@ class Connection(Database):
         These objects are small stateless factories for cursors, which do all the real work.
     """
     def __init__(self, db_name, db_url='http://localhost:8123/', username=None,
-                 password=None, readonly=False, ssl="False", verify="True"):
+                 password=None, readonly=False, ssl="False", verify="True",
+                 timeout=60):
         if str_parameter_to_bool("ssl", ssl):
             db_url = db_url.replace("http", "https")
 
         verify = str_parameter_to_bool("verify", verify)
 
         super(Connection, self).__init__(db_name, db_url, username, password,
-                                         readonly, verify_ssl_cert=verify)
+                                         readonly, verify_ssl_cert=verify,
+                                         timeout=timeout)
         self.db_name = db_name
         self.db_url = db_url
         self.username = username

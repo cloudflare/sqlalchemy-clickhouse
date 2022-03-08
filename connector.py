@@ -84,6 +84,9 @@ def create_ad_hoc_field(cls, db_type):
     if db_type == 'LowCardinality(String)':
         db_type = 'String'
 
+    if db_type == 'Bool':
+        db_type = 'UInt8'
+        
     if db_type == 'LowCardinality(Nullable(String))':
         db_type = 'String'
 

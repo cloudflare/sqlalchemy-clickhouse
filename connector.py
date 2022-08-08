@@ -8,7 +8,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import re
 import uuid
-import requests
 from infi.clickhouse_orm.models import ModelBase
 from infi.clickhouse_orm.database import Database
 from datetime import datetime

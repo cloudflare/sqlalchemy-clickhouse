@@ -20,7 +20,8 @@ setup(
     download_url = 'https://github.com/cloudflare/sqlalchemy-clickhouse/releases/tag/v0.1.5',
     install_requires = [
         'sqlalchemy>=1.0.0',
-        'infi.clickhouse_orm>=1.2.0'
+        'infi.clickhouse_orm>=1.2.0',
+        'six>=1.16.0',
     ],
     packages=[
         'sqlalchemy_clickhouse',

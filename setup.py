@@ -7,6 +7,16 @@ from codecs import open
 VERSION = [0, 1, 5]
 readme = open('README.rst').read()
 
+dialects = [
+    'clickhouse{}=sqlalchemy_clickhouse.{}'.format(driver, d_path)
+
+    for driver, d_path in [
+        ('', 'base:ClickHouseDialect'),
+        ('.http', 'base:ClickHouseDialect'),
+        ('.native', 'base:ClickHouseDialect')
+    ]
+]
+
 setup(
     name='sqlalchemy-clickhouse',
     version='.'.join('%d' % v for v in VERSION[0:3]),
@@ -32,9 +42,7 @@ setup(
         'sqlalchemy_clickhouse': ['LICENSE.txt'],
     },
     entry_points={
-        'sqlalchemy.dialects': [
-            'clickhouse=sqlalchemy_clickhouse.base',
-        ]
+        'sqlalchemy.dialects': dialects
     },
     classifiers = [
         'Development Status :: 5 - Production/Stable',

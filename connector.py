@@ -13,6 +13,11 @@ from infi.clickhouse_orm.models import ModelBase
 from infi.clickhouse_orm.database import Database
 from datetime import datetime
 
+# fix local timezone
+from tzlocal import get_localzone
+import os
+# fixed local timezone
+
 # PEP 249 module globals
 apilevel = '2.0'
 threadsafety = 2  # Threads may share the module and connections.
@@ -364,7 +369,17 @@ class Cursor(object):
         for r in response:
             if not cols:
                 cols = [(f, r._fields[f].db_type) for f in r._fields]
-            data.append([getattr(r, f) for f in r._fields])
+            vals = []
+            for fi in r._fields:
+                val = getattr(r, fi)
+
+                clickhouseUseLocalTimezone = int(os.getenv('CLICKHOUSE_USE_LOCAL_TIMEZONE', '0'))
+                if clickhouseUseLocalTimezone and (r._fields[fi].db_type == 'DateTime' or r._fields[fi].db_type == 'Date'):
+                    val = val.astimezone(get_localzone())
+
+                vals.append(val)
+            data.append(vals)
+            # data.append([getattr(r, f) for f in r._fields])
         self._data = data
         self._columns = cols
         self._state = self._STATE_FINISHED
